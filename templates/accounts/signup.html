@@ -1,8 +1,208 @@
-<h2>Sign Up</h2>
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Sign Up</button>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Sign Up</title>
 
-<p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            background: #f5f5f5;
+            font-family: Arial, sans-serif;
+            overflow-y: auto;
+            padding-top: 40px;
+            padding-bottom: 40px;
+        }
+
+        .signup-container {
+            background: white;
+            padding: 30px;
+            width: 100%;
+            max-width: 350px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* NEW: Wrapper for password fields to position the eye icon */
+        .password-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box; /* Ensures padding doesn't break layout */
+        }
+
+        /* Specific padding for password inputs so text doesn't hide behind the eye */
+        input[type="password"], input[type="text"].pw-input {
+            padding-right: 40px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            bottom: 10px; /* Aligned to the middle of the input box */
+            cursor: pointer;
+            color: #777;
+            font-size: 18px;
+            z-index: 10;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #28a745;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #218838;
+        }
+
+        .bottom-text {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .bottom-text a {
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        textarea {
+            resize: none;
+            overflow-y: auto;
+        }
+
+        .errorlist {
+            color: red;
+            font-size: 12px;
+            margin: 5px 0 10px 0;
+            padding: 0;
+            list-style: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="signup-container">
+        <h2>Create Account</h2>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {{ form.username.label_tag }}
+            {{ form.username }}
+            {{ form.username.errors }}
+
+            {{ form.first_name.label_tag }}
+            {{ form.first_name }}
+            {{ form.first_name.errors }}
+
+            {{ form.last_name.label_tag }}
+            {{ form.last_name }}
+            {{ form.last_name.errors }}
+
+            {{ form.email.label_tag }}
+            {{ form.email }}
+            {{ form.email.errors }}
+
+            <div class="password-wrapper">
+                {{ form.password1.label_tag }}
+                {{ form.password1 }}
+                <i class="fas fa-eye password-toggle" onclick="togglePassword('id_password1', this)"></i>
+            </div>
+            {{ form.password1.errors }}
+
+            <div class="password-wrapper">
+                {{ form.password2.label_tag }}
+                {{ form.password2 }}
+                <i class="fas fa-eye password-toggle" onclick="togglePassword('id_password2', this)"></i>
+            </div>
+            {{ form.password2.errors }}
+
+            {{ form.birthdate.label_tag }}
+            {{ form.birthdate }}
+            {{ form.birthdate.errors }}
+
+            {{ form.gender.label_tag }}
+            {{ form.gender }}
+            {{ form.gender.errors }}
+
+            {{ form.role.label_tag }}
+            {{ form.role }}
+            {{ form.role.errors }}
+
+            {{ form.bio.label_tag }}
+            {{ form.bio }}
+            {{ form.bio.errors }}
+
+            {{ form.avatar.label_tag }}
+            {{ form.avatar }}
+            {{ form.avatar.errors }}
+
+            <button type="submit">Sign Up</button>
+        </form>
+
+        <p class="bottom-text">
+            Already have an account? <a href="{% url 'login' %}">Login</a>
+        </p>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+    // Datepicker logic
+    flatpickr(".datepicker", {
+        dateFormat: "d/m/Y",
+        allowInput: false
+    });
+
+    // Password Toggle Logic
+    function togglePassword(fieldId, icon) {
+        const field = document.getElementById(fieldId);
+        if (field.type === "password") {
+            field.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        } else {
+            field.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }
+    }
+</script>
+
+</body>
+</html>

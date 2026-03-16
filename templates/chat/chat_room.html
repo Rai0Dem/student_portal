@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Chat with {{ other_user.username }}{% endblock %}
+
+{% block content %}
+<style>
+    .chat-container {
+        max-width: 800px;
+        margin: 20px auto;
+        background: white;
+        border-radius: 12px;
+        border: 2px solid #c5cbd3;
+        display: flex;
+        flex-direction: column;
+        height: 80vh;
+    }
+
+    .chat-header {
+        padding: 15px 25px;
+        border-bottom: 2px solid #dcdfe4;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    #chat-box {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: #f9fafb;
+    }
+
+    .message {
+        max-width: 70%;
+        padding: 10px 15px;
+        border-radius: 15px;
+        font-size: 15px;
+        position: relative;
+        word-wrap: break-word;
+    }
+
+    .sent {
+        align-self: flex-end;
+        background: #007bff;
+        color: white;
+        border-bottom-right-radius: 2px;
+    }
+
+    .received {
+        align-self: flex-start;
+        background: #e9ecef;
+        color: #212529;
+        border-bottom-left-radius: 2px;
+    }
+
+    .timestamp {
+        font-size: 10px;
+        display: block;
+        margin-top: 5px;
+        opacity: 0.7;
+    }
+
+    .chat-input-area {
+        padding: 20px;
+        border-top: 2px solid #dcdfe4;
+        display: flex;
+        gap: 10px;
+    }
+
+    #message-input {
+        flex: 1;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1.5px solid #b8bec7;
+        outline: none;
+    }
+
+    #send-btn {
+        padding: 10px 20px;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+    }
+</style>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <div>
+            <strong>{{ other_user.username }}</strong>
+            <br>
+            <small id="header-status">
+                <span id="header-dot" class="status-dot"></span>
+                <span id="header-text">Checking status...</span>
+            </small>
+        </div>
+        <a href="{% url 'friends_list' %}" style="text-decoration:none; color:#6c757d;">&times; Close</a>
+    </div>
+
+    <div id="chat-box">
+        {% for msg in chat_messages %}
+            <div class="message {% if msg.sender == request.user %}sent{% else %}received{% endif %}" data-id="{{ msg.id }}">
+                {{ msg.content }}
+                <span class="timestamp">{{ msg.timestamp|date:"H:i" }}</span>
+            </div>
+        {% endfor %}
+    </div>
+
+    <form id="chat-form" class="chat-input-area">
+        {% csrf_token %}
+        <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
+        <button type="submit" id="send-btn">Send</button>
+    </form>
+</div>
+
+<script>
+    // 1. GLOBAL SWITCH: Stop the general status ping from base.html
+    window.isChatPage = true; 
+
+    const chatBox = document.getElementById('chat-box');
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message-input');
+    const headerDot = document.getElementById('header-dot');
+    const headerText = document.getElementById('header-text');
+
+    let isLoadingOlder = false; 
+    let hasMoreHistory = true; // NEW: Stop pinging when history ends
+
+    // Scroll to bottom on load
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // --- INFINITE SCROLL (LOADING OLDER MESSAGES) ---
+    chatBox.onscroll = function() {
+        if (chatBox.scrollTop === 0 && !isLoadingOlder && hasMoreHistory) {
+            const firstMsg = chatBox.querySelector('.message:first-child');
+            if (!firstMsg) return;
+
+            const firstId = firstMsg.getAttribute('data-id');
+            isLoadingOlder = true;
+
+            const oldHeight = chatBox.scrollHeight;
+
+            fetch(`/chat/api/get-messages/{{ other_user.id }}/?before_id=${firstId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.messages.length > 0) {
+                    // Logic fix: Loop through array and prepend
+                    // Note: Views.py now sends them in chronological order
+                    // We reverse only for the prepending sequence to keep the flow correct
+                    data.messages.reverse().forEach(msg => {
+                        const div = document.createElement('div');
+                        const isMe = msg.sender === '{{ request.user.username }}';
+                        div.className = `message ${isMe ? 'sent' : 'received'}`;
+                        div.setAttribute('data-id', msg.id);
+                        div.innerHTML = `${msg.content} <span class="timestamp">${msg.timestamp}</span>`;
+                        chatBox.prepend(div);
+                    });
+
+                    // Maintain scroll position
+                    chatBox.scrollTop = chatBox.scrollHeight - oldHeight;
+                }
+                
+                // If more_history is false, we don't need to check again
+                if (data.more_history === false) {
+                    hasMoreHistory = false;
+                }
+
+                isLoadingOlder = false;
+            })
+            .catch(err => {
+                console.error(err);
+                isLoadingOlder = false;
+            });
+        }
+    };
+
+
+    // 2. GET NEW MESSAGES + STATUS (Combined Ping)
+    function fetchUpdates() {
+        const lastMsg = chatBox.querySelector('.message:last-child');
+        const lastId = lastMsg ? lastMsg.getAttribute('data-id') : 0;
+
+        fetch(`/chat/api/get-messages/{{ other_user.id }}/?last_id=${lastId}`)
+        .then(res => res.json())
+        .then(data => {
+            // Update Online Status
+            headerDot.style.background = data.friend_is_online ? '#2ecc71' : '#ccc';
+            headerText.textContent = data.friend_is_online ? 'Online' : 'Offline';
+
+            // Append Messages
+            if (data.messages.length > 0) {
+                data.messages.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.className = 'message received';
+                    div.setAttribute('data-id', msg.id);
+                    div.innerHTML = `${msg.content} <span class="timestamp">${msg.timestamp}</span>`;
+                    chatBox.appendChild(div);
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        });
+    }
+
+    // 3. SEND MESSAGE
+    chatForm.onsubmit = function(e) {
+        e.preventDefault();
+        const content = messageInput.value.trim();
+        if (!content) return;
+
+        const formData = new FormData();
+        formData.append('content', content);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        fetch(`/chat/api/send-message/{{ other_user.id }}/`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'sent') {
+                const div = document.createElement('div');
+                div.className = 'message sent';
+                div.setAttribute('data-id', data.id);
+                div.innerHTML = `${data.content} <span class="timestamp">${data.timestamp}</span>`;
+                chatBox.appendChild(div);
+                messageInput.value = '';
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        });
+    };
+
+    // Run every 2 seconds
+    setInterval(fetchUpdates, 2000);
+</script>
+{% endblock %}

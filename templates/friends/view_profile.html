@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ target_user.username }}'s Profile{% endblock %}
+
+{% block content %}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 20px 40px;
+        border-bottom: 2px solid #d0d5dd;
+        margin-bottom: 30px;
+    }
+
+    .nav-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .nav-btn {
+        text-decoration: none;
+        font-size: 14px;
+        padding: 8px 16px;
+        border-radius: 6px;
+        color: white;
+        transition: 0.2s;
+    }
+
+    .btn-home { background: #6c757d; }
+    .btn-friends { background: #007bff; }
+    .btn-home:hover { background: #5a6268; }
+    .btn-friends:hover { background: #0056b3; }
+
+    .container {
+        max-width: 1100px;
+        margin: 40px auto;
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        border: 2px solid #c5cbd3;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    .avatar-section {
+        text-align: center;
+        margin-bottom: 40px;
+        padding-bottom: 30px;
+        border-bottom: 2px solid #d6dbe2;
+    }
+
+    .avatar-preview {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #9ca3af;
+        margin-bottom: 15px;
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    /* Style for read-only data boxes */
+    .info-group label {
+        display: block;
+        font-weight: bold;
+        color: #4b5563;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .info-box {
+        width: 100%;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 8px;
+        border: 1.5px solid #e5e7eb;
+        color: #111827;
+        min-height: 45px;
+        display: flex;
+        align-items: center;
+    }
+
+    .bio-box {
+        align-items: flex-start;
+        min-height: 100px;
+    }
+
+    @media (max-width:900px) {
+        .profile-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="page-header">
+    <span style="font-size: 22px; font-weight: bold;">User Profile</span>
+    <div class="nav-buttons">
+        <a href="{% url 'home' %}" class="nav-btn btn-home">Back to Home</a>
+        <a href="{% url 'friends_list' %}" class="nav-btn btn-friends">Back to Friends</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="avatar-section">
+        {% if target_user.profile.avatar %}
+            <img src="{{ target_user.profile.avatar.url }}" class="avatar-preview">
+        {% else %}
+            <img src="{% static 'default.jpg' %}" class="avatar-preview">
+        {% endif %}
+        <h3>{{ target_user.username }}</h3>
+        <p style="color: #6b7280;">{{ target_user.profile.role|title }}</p>
+    </div>
+
+    <div class="profile-grid">
+        <div class="info-group">
+            <label>Username</label>
+            <div class="info-box">{{ target_user.username }}</div>
+        </div>
+
+        <div class="info-group">
+            <label>Email Address</label>
+            <div class="info-box">{{ target_user.email|default:"Not Provided" }}</div>
+        </div>
+
+        <div class="info-group">
+            <label>First Name</label>
+            <div class="info-box">{{ target_user.first_name|default:"-" }}</div>
+        </div>
+
+        <div class="info-group">
+            <label>Last Name</label>
+            <div class="info-box">{{ target_user.last_name|default:"-" }}</div>
+        </div>
+
+        <div class="info-group">
+            <label>Birth Date</label>
+            <div class="info-box">{{ target_user.profile.birthdate|date:"d/m/Y"|default:"-" }}</div>
+        </div>
+
+        <div class="info-group">
+            <label>Gender</label>
+           <div class="info-box">{{ target_user.profile.get_gender_display|default:"-" }}</div>
+        </div>
+
+        <div class="info-group" style="grid-column: span 2;">
+            <label>Bio</label>
+            <div class="info-box bio-box">{{ target_user.profile.bio|default:"No bio available." }}</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

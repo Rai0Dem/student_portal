@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Find Friends{% endblock %}
+
+{% block content %}
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 20px 40px;
+        border-bottom: 2px solid #d0d5dd;
+        margin-bottom: 30px;
+    }
+
+    .header-title {
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    .nav-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .nav-btn {
+        text-decoration: none;
+        font-size: 14px;
+        padding: 8px 16px;
+        border-radius: 6px;
+        color: white;
+        transition: 0.2s;
+    }
+
+    .btn-home { background: #6c757d; }
+    .btn-friends { background: #007bff; }
+    .btn-home:hover { background: #5a6268; }
+    .btn-friends:hover { background: #0056b3; }
+
+    .search-container {
+        max-width: 800px;
+        margin: 0 auto 40px auto;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        border: 2px solid #c5cbd3;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    .search-form {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1.5px solid #b8bec7;
+    }
+
+    .search-submit {
+        padding: 10px 20px;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .user-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        gap: 15px;
+    }
+
+    .user-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #ddd;
+    }
+
+    .action-btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .btn-add { background: #007bff; color: white; }
+    .btn-pending { background: #ccc; color: #666; cursor: not-allowed; }
+    .btn-received { background: #ffc107; color: #212529; text-decoration: none; display: inline-block; }
+</style>
+
+<div class="page-header">
+    <div class="header-title">Find Friends</div>
+    <div class="nav-buttons">
+        <a href="{% url 'home' %}" class="nav-btn btn-home">Back to Home</a>
+        <a href="{% url 'friends_list' %}" class="nav-btn btn-friends">Back to Friends</a>
+    </div>
+</div>
+
+<div class="search-container">
+    <form method="get" class="search-form">
+        <input type="text" name="q" class="search-input" placeholder="Search by username..." value="{{ query }}">
+        <button type="submit" class="search-submit">Search</button>
+    </form>
+
+    <div class="user-list">
+        {% for user in users %}
+        <div class="user-item">
+            {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" class="user-avatar">
+            {% else %}
+                <img src="{% static 'default.jpg' %}" class="user-avatar">
+            {% endif %}
+
+            <div style="flex:1;">
+                <div style="font-weight: bold;">{{ user.username }}</div>
+                <small style="color: #666;">{{ user.profile.role|title }}</small>
+            </div>
+
+            <div class="user-actions">
+               {% if user.id in outgoing_requests %}
+               <button class="action-btn btn-pending" disabled style="background:#ccc; cursor:not-allowed;">
+               Pending
+               </button>
+
+               {% elif user.id in incoming_requests %}
+               <a href="{% url 'incoming_requests' %}" class="action-btn" style="background:#ffc107; color:#212529; text-decoration:none; padding:8px 16px; border-radius:6px; font-weight:500;">
+               Request Received
+              </a>
+ 
+              {% else %}
+              <a href="{% url 'send_friend_request' user.id %}" style="text-decoration:none;">
+               <button class="action-btn btn-add" style="background:#007bff; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">
+                Add Friend
+               </button>
+               </a>
+               {% endif %}
+           </div>
+       </div>
+        {% empty %}
+            <p style="text-align: center; color: #666; padding: 20px;">No users found matching your search.</p>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Friend Requests{% endblock %}
+
+{% block content %}
+
+<style>
+    /* Header & Navigation Styles */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 20px 40px;
+        border-bottom: 2px solid #d0d5dd;
+        margin-bottom: 30px;
+    }
+
+    .header-title {
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    .nav-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .nav-btn {
+        text-decoration: none;
+        font-size: 14px;
+        padding: 8px 16px;
+        border-radius: 6px;
+        color: white;
+        transition: 0.2s;
+    }
+
+    /* Colors to match your existing theme */
+    .btn-home { background: #6c757d; }
+    .btn-friends { background: #007bff; }
+    .btn-home:hover { background: #5a6268; }
+    .btn-friends:hover { background: #0056b3; }
+
+    /* Container for the requests list */
+    .requests-container {
+        max-width: 800px;
+        margin: 0 auto 40px auto;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        border: 2px solid #c5cbd3;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    .request-card {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        gap: 15px;
+    }
+
+    .request-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #ddd;
+    }
+
+    .request-info {
+        flex: 1;
+    }
+
+    .request-name {
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .accept-btn {
+        padding: 8px 16px;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: 0.2s;
+    }
+
+    .accept-btn:hover {
+        background: #218838;
+    }
+
+    .empty {
+        text-align: center;
+        color: #666;
+        padding: 40px 0;
+    }
+</style>
+
+<div class="page-header">
+    <div class="header-title">Friend Requests</div>
+    <div class="nav-buttons">
+        <a href="{% url 'home' %}" class="nav-btn btn-home">Back to Home</a>
+        <a href="{% url 'friends_list' %}" class="nav-btn btn-friends">Back to Friends</a>
+    </div>
+</div>
+
+<div class="requests-container">
+    {% if requests %}
+        {% for fr in requests %}
+        <div class="request-card">
+            {% if fr.sender.profile.avatar %}
+                <img src="{{ fr.sender.profile.avatar.url }}" class="request-avatar">
+            {% else %}
+                <img src="{% static 'default.jpg' %}" class="request-avatar">
+            {% endif %}
+
+            <div class="request-info">
+                <div class="request-name">{{ fr.sender.username }}</div>
+                <div style="font-size:13px; color:#666;">
+                    {{ fr.sender.profile.role|title }}
+                </div>
+            </div>
+
+            <a href="{% url 'accept_friend_request' fr.id %}" style="text-decoration: none;">
+                <button class="accept-btn">
+                    Accept
+                </button>
+            </a>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty">
+            <p>No pending friend requests.</p>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

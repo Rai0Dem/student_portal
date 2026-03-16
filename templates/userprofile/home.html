@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static %}
+
+    {% block title %}Home{% endblock %}
+
+    {% block content %}
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        header button {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .profile-pic {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #ccc;
+            margin-top: 20px;
+        }
+        .main-buttons button {
+            padding: 12px 30px;
+            cursor: pointer;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin: 10px;
+            font-size: 16px;
+        }
+        h1 {
+            margin-top: 15px;
+            font-size: 28px;
+        }
+    </style>
+
+    <!-- Top header -->
+    <header>
+        <a href="{% url 'admin:index' %}"><button>Help</button></a>
+        <a href="{% url 'logout' %}"><button>Logout</button></a>
+    </header>
+
+    <!-- Profile picture -->
+     {% if user.profile.avatar %}
+        <img src="{{ user.profile.avatar.url }}" class="profile-pic">
+     {% else %}
+        <img src="{% static 'default.jpg' %}" class="profile-pic">
+     {% endif %}
+
+    <!-- Greeting -->
+    <h1>Hello, {{ user.first_name|default:user.username }}!</h1>
+    <p style="
+       display:inline-block;
+       padding:6px 14px;
+       background:#e9f2ff;
+       color:#2c5aa0;
+       border-radius:15px;
+       font-weight:600;
+       margin-top:-5px;
+       ">
+      {{ user.profile.role|title }}
+     </p>
+    <!-- Main section buttons -->
+    <div class="main-buttons">
+           <a href="{% url 'edit_profile' %}">
+            <button>Customize Profile</button>
+        </a>
+
+        <a href="{% url 'friends_list' %}">
+            <button>Friends</button>
+        </a>
+
+        <a href="#">
+            <button>Notifications</button>
+        </a>
+    </div>
+    {% endblock %}

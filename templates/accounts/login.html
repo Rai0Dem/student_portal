@@ -1,8 +1,145 @@
-<h2>Login</h2>
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Login</button>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<p>Don't have an account? <a href="{% url 'signup' %}">Sign Up</a></p>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+
+        .login-container {
+            background: white;
+            padding: 30px;
+            width: 350px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        form p {
+            margin-bottom: 15px;
+            position: relative; /* Container for absolute positioning */
+            display: flex;
+            flex-direction: column;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            padding-right: 40px; /* Space for the eye icon */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box; /* Crucial for width calculation */
+            font-size: 14px;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* Adjusted Eye Positioning */
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            /* This targets the eye to the middle of the input area, 
+               accounting for the label height above it */
+            bottom: 10px; 
+            cursor: pointer;
+            color: #777;
+            font-size: 18px;
+            z-index: 10;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #007bff;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .bottom-text {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .bottom-text a {
+            text-decoration: none;
+            color: #007bff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <h2>Welcome Back</h2>
+
+        <form method="POST" id="login-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <button type="submit">Login</button>
+        </form>
+
+        <p class="bottom-text">
+            Don’t have an account? <a href="{% url 'signup' %}">Sign Up</a>
+        </p>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const passwordField = document.querySelector('input[type="password"]');
+            
+            if (passwordField) {
+                // 1. Create a wrapper or ensure the parent is the anchor
+                const parent = passwordField.parentElement;
+                parent.style.position = 'relative';
+
+                // 2. Create the eye icon
+                const toggleIcon = document.createElement('i');
+                toggleIcon.className = 'fas fa-eye password-toggle';
+                
+                // 3. Append to the same parent as the input
+                parent.appendChild(toggleIcon);
+
+                // 4. Toggle Logic
+                toggleIcon.addEventListener('click', function() {
+                    const isPassword = passwordField.getAttribute('type') === 'password';
+                    passwordField.setAttribute('type', isPassword ? 'text' : 'password');
+                    
+                    // Switch icon classes
+                    this.classList.toggle('fa-eye');
+                    this.classList.toggle('fa-eye-slash');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
