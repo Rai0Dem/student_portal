@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .models import FriendRequest
+from notifications.models import Notification
+from django.urls import reverse
 from django.utils import timezone
 from django.http import JsonResponse
 from django.db.models import Q
@@ -27,6 +29,14 @@ def send_friend_request(request, user_id):
     # 2. Now create the clean, new request
     FriendRequest.objects.create(sender=request.user, receiver=receiver)
 
+# Inside your send_request view logic:
+    Notification.objects.create(
+    user=receiver, # The person receiving the request
+    notification_type='friend_request',
+    text=f"{request.user.get_full_name() or request.user.username} sent you a friend request.",
+    target_url=reverse('incoming_requests') # Update with your exact friend request list URL name
+)
+
     return redirect('search_users')
 
 
@@ -46,6 +56,16 @@ def accept_friend_request(request, request_id):
 
     return redirect('incoming_requests')
 
+@login_required
+def decline_friend_request(request, request_id):
+    # Find the request where the current user is the intended receiver
+    friend_request = get_object_or_404(FriendRequest, id=request_id, receiver=request.user)
+    
+    # Simply delete the request from the database
+    friend_request.delete()
+    
+    # Redirect back to the requests page
+    return redirect('incoming_requests')
 
 @login_required
 def remove_friend(request, user_id):
@@ -65,6 +85,7 @@ def remove_friend(request, user_id):
     return redirect('friends_list')
 
 def incoming_friend_requests(request):
+    Notification.objects.filter(user=request.user, notification_type='friend_request').delete()
     requests = FriendRequest.objects.filter(receiver=request.user, accepted=False)
     return render(request, 'friends/incoming_requests.html', {'requests': requests})
 

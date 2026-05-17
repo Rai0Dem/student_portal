@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Files Archive{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+    }
+
+    /* Header & Navigation */
+    .archive-header { 
+        display: flex; 
+        justify-content: space-between; 
+        padding: 20px; 
+        align-items: center;
+    }
+
+    .btn-nav {
+        padding: 10px 20px;
+        cursor: pointer;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .btn-academic {
+        padding: 10px 20px;
+        background: #17a2b8;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        margin-right: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+
+    .btn-academic:hover {
+        background: #138496;
+    }
+
+    /* Search & Filters Section */
+    .search-section {
+        background: white;
+        width: 85%;
+        margin: 0 auto 30px auto;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .search-section input[type="text"] {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        width: 250px;
+    }
+
+    .search-section select {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background: white;
+    }
+
+    .friends-filter {
+        font-weight: 600;
+        color: #555;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    /* File List Styling */
+    .file-list {
+        width: 90%;
+        max-width: 1000px;
+        margin: 0 auto 50px auto;
+    }
+
+    .file-row { 
+        display: grid;
+        grid-template-columns: 2fr 1.5fr 1fr 1fr 0.5fr;
+        align-items: center;
+        background: white; 
+        margin-bottom: 12px; 
+        padding: 15px 25px;
+        border-radius: 10px; 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        text-align: left;
+        transition: transform 0.2s;
+    }
+
+    .file-row:hover {
+        transform: scale(1.01);
+    }
+
+    .file-info {
+        font-size: 16px;
+        color: #333;
+    }
+
+    .uploader-name {
+        color: #666;
+        font-style: italic;
+    }
+
+    .file-meta {
+        color: #888;
+        font-size: 14px;
+    }
+
+    .download-btn { 
+        color: #28a745; 
+        font-size: 22px; 
+        text-decoration: none;
+        text-align: center;
+    }
+
+    .download-btn:hover {
+        color: #218838;
+    }
+
+    .empty-msg {
+        color: #888;
+        font-style: italic;
+        margin-top: 40px;
+    }
+</style>
+
+<div class="archive-header">
+    <div class="teacher-tools">
+    {% if user.profile.role == 'teacher' %}
+        <a href="{% url 'upload_file' %}" style="text-decoration: none;">
+            <button class="btn-academic">Upload Files</button>
+        </a>
+        <a href="{% url 'my_uploads' %}" style="text-decoration: none;">
+            <button class="btn-academic">My Uploads</button>
+        </a>
+    {% endif %}
+    </div>
+    
+    <div class="home-tool">
+        <a href="{% url 'home' %}" class="btn-nav">Back to Home</a>
+    </div>
+</div>
+
+<h1>Library Archive</h1>
+
+<div class="search-section">
+    <form method="GET" style="display: contents;">
+        <input type="text" name="q" placeholder="🔍 Search file name..." value="{{ request.GET.q }}">
+        
+        <select name="sort" onchange="this.form.submit()">
+            <option value="alphabetical" {% if request.GET.sort == 'alphabetical' %}selected{% endif %}>Sort: A-Z</option>
+            <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>Sort: Newest</option>
+        </select>
+
+        <label class="friends-filter">
+            <input type="checkbox" name="friends" value="true" onchange="this.form.submit()" {% if request.GET.friends == 'true' %}checked{% endif %}>
+            Only Friends
+        </label>
+    </form>
+</div>
+
+<div class="file-list">
+    <div class="file-row" style="background: none; box-shadow: none; font-weight: bold; color: #555;">
+        <span>File Name</span>
+        <span>Teacher</span>
+        <span>Size</span>
+        <span>Date</span>
+        <span></span>
+    </div>
+
+    {% for file in files %}
+    <div class="file-row">
+        <span class="file-info"><strong>{{ file.title }}</strong></span>
+        <span class="uploader-name">{{ file.uploader.get_full_name|default:file.uploader.username }}</span>
+        <span class="file-meta">{{ file.size_mb }} MB</span>
+        <span class="file-meta">{{ file.uploaded_at|date:"M d, Y" }}</span>
+        <a href="{{ file.file.url }}" class="download-btn" title="Download" download>📥</a>
+    </div>
+    {% empty %}
+    <p class="empty-msg">No files found matching your criteria.</p>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -5,11 +5,20 @@ from django.http import JsonResponse
 from django.db.models import Q
 from .models import Message
 from django.utils import timezone
+from django.urls import reverse
+from notifications.models import Notification  # 1. Import your Notification model
 
 @login_required
 def chat_room(request, user_id):
     """Initial page load: gets the last 20 messages."""
     other_user = get_object_or_404(User, id=user_id)
+    
+    # When a user opens the chat room, automatically clear out unread notifications from this specific sender
+    Notification.objects.filter(
+        user=request.user,
+        notification_type='new_message',
+        text__contains=other_user.username
+    ).delete() # Or set to is_read=True, but deleting keeps the database clean
     
     # Get last 20 messages for the conversation
     messages = Message.objects.filter(
@@ -53,7 +62,16 @@ def get_new_messages(request, user_id):
             receiver=request.user,
             id__gt=last_id
         ).order_by('timestamp')
-        msgs.update(is_read=True)
+        
+        # If they are currently in the chat actively pinging and receiving messages, 
+        # make sure we clear out any stray unread message notifications
+        if msgs.exists():
+            msgs.update(is_read=True)
+            Notification.objects.filter(
+                user=request.user,
+                notification_type='new_message',
+                text__contains=other_user.username
+            ).delete()
 
     is_online = timezone.now() - other_user.profile.last_seen < timezone.timedelta(seconds=10)
 
@@ -84,6 +102,28 @@ def send_message(request, user_id):
                 receiver=other_user,
                 content=content
             )
+            
+            # --- NOTIFICATION SYSTEM LOGIC ---
+            # 2. Check if an UNREAD notification for a message from this sender already exists
+            sender_display_name = request.user.username
+            already_notified = Notification.objects.filter(
+                user=other_user, 
+                notification_type='new_message', 
+                text__contains=f"({sender_display_name})",
+                is_read=False
+            ).exists()
+
+            # 3. If no unread notification exists yet, create ONE single notification
+            if not already_notified:
+                sender_full_name = request.user.get_full_name() or request.user.username
+                Notification.objects.create(
+                    user=other_user,
+                    notification_type='new_message',
+                    text=f"New message from {sender_full_name} ({sender_display_name}).",
+                    target_url=reverse('chat_room', args=[request.user.id])
+                )
+            # ---------------------------------
+
             return JsonResponse({
                 "status": "sent",
                 "id": msg.id,

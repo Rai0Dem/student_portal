@@ -9,4 +9,5 @@ urlpatterns = [
     path('requests/', views.incoming_friend_requests, name='incoming_requests'),
     path("check-online/", views.check_online, name="check_online"),
     path("profile/<int:user_id>/", views.view_profile, name="view_profile"),
+    path('requests/decline/<int:request_id>/', views.decline_friend_request, name='decline_friend_request'),
 ]

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Uploads{% endblock %}
+
+{% block content %}
+<style>
+    /* Reusing your archive styles */
+    body { font-family: Arial, sans-serif; background: #f4f4f4; text-align: center; }
+    
+    .archive-header { 
+        display: flex; 
+        justify-content: space-between; 
+        padding: 20px; 
+        align-items: center;
+    }
+
+    .btn-nav {
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 14px;
+        margin-left: 10px;
+    }
+
+    .file-list { width: 90%; max-width: 1000px; margin: 20px auto; }
+
+    .file-row { 
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 0.5fr; /* Removed Teacher column since it's always 'You' */
+        align-items: center;
+        background: white; 
+        margin-bottom: 12px; 
+        padding: 15px 25px;
+        border-radius: 10px; 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        text-align: left;
+    }
+
+    .edit-btn { 
+        color: #ffc107; /* Warning yellow for edit */
+        font-size: 20px; 
+        text-decoration: none;
+        text-align: center;
+    }
+
+    .file-meta { color: #888; font-size: 14px; }
+</style>
+
+<div class="archive-header">
+    <div>
+        <h2 style="margin:0; color:#333;">My Managed Files</h2>
+    </div>
+    
+    <div class="navigation-tools">
+        <a href="{% url 'file_list' %}" class="btn-nav" style="background: #17a2b8;">Back to Files Archive</a>
+        <a href="{% url 'home' %}" class="btn-nav">Back to Home</a>
+    </div>
+</div>
+
+<div class="file-list">
+    <div class="file-row" style="background: none; box-shadow: none; font-weight: bold; color: #555;">
+        <span>File Name</span>
+        <span>Size</span>
+        <span>Date Uploaded</span>
+        <span>Action</span>
+    </div>
+
+    {% for file in files %}
+    <div class="file-row">
+        <span><strong>{{ file.title }}</strong></span>
+        <span class="file-meta">{{ file.size_mb }} MB</span>
+        <span class="file-meta">{{ file.uploaded_at|date:"M d, Y" }}</span>
+        <a href="{% url 'edit_file' file.id %}" class="edit-btn" title="Edit File">✏️</a>
+    </div>
+    {% empty %}
+    <p style="margin-top: 40px; color: #888;">You haven't uploaded any files yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

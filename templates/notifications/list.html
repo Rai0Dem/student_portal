@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; text-align: center; }
+
+    .noti-header { 
+        display: flex; 
+        justify-content: space-between; 
+        padding: 20px 5%; 
+        align-items: center;
+    }
+
+    .btn-nav {
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .noti-list { width: 90%; max-width: 1000px; margin: 20px auto; }
+
+    .noti-row { 
+        display: grid;
+        grid-template-columns: 2.5fr 1fr 1fr; /* Text, Date, Action Button */
+        align-items: center;
+        background: white; 
+        margin-bottom: 12px; 
+        padding: 15px 25px;
+        border-radius: 10px; 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        text-align: left;
+    }
+
+    .noti-text { font-size: 15px; color: #333; }
+    .noti-date { color: #888; font-size: 14px; text-align: left; }
+    .noti-btn { 
+        background: #17a2b8; 
+        color: white; 
+        text-decoration: none; 
+        padding: 8px 15px; 
+        border-radius: 5px; 
+        font-size: 13px; 
+        font-weight: bold;
+        text-align: center;
+        width: fit-content;
+        justify-self: end;
+    }
+    .noti-btn:hover { background: #138496; }
+
+    /* Pagination controls */
+    .pagination { margin: 30px auto; display: flex; justify-content: center; gap: 10px; align-items: center;}
+    .page-link { padding: 8px 16px; background: white; color: #007bff; border: 1px solid #ddd; border-radius: 5px; text-decoration: none; }
+    .page-link.active { background: #007bff; color: white; border-color: #007bff; }
+</style>
+
+<div class="noti-header">
+    <h2>Notifications Hub</h2>
+    <a href="{% url 'home' %}" class="btn-nav">Back to Home</a>
+</div>
+
+<div class="noti-list">
+    {% for noti in page_obj %}
+        <div class="noti-row">
+            <span class="noti-text">{{ noti.text }}</span>
+            <span class="noti-date">{{ noti.created_at|date:"M d, Y - H:i" }}</span>
+            <a href="{{ noti.target_url }}" class="noti-btn">View</a>
+        </div>
+    {% empty %}
+        <p style="color: #888; margin-top: 5px; font-style: italic;">Your notification tray is empty.</p>
+    {% endfor %}
+</div>
+
+<!-- Pagination Navigation -->
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="page-link">&laquo; Previous</a>
+    {% endif %}
+
+    <span class="page-link active">{{ page_obj.number }}</span>
+
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="page-link">Next &raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

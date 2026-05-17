@@ -14,19 +14,41 @@
 {% if user.is_authenticated %}
 <script>
 function pingServer() {
-
     // If we are on the chat page, 'window.isChatPage' will be true
     // and we stop this ping to save server resources.
     if (window.isChatPage) return;
 
+    // 1. Existing Heartbeat Track (keeps user online status active)
     fetch("{% url 'update_last_seen' %}", {
         method: "GET",
         credentials: "same-origin"
     });
+
+    // 2. Notification Badge Check
+    const badge = document.getElementById("notification-badge");
+    // Ensure this matches whatever your endpoint URL name is called
+    const apiEndpoint = "{% url 'unread_notification_count' %}";
+
+    if (badge) {
+        fetch(apiEndpoint)
+            .then(response => response.json())
+            .then(data => {
+                const count = data.unread_count;
+
+                if (count > 0) {
+                    badge.textContent = count > 10 ? "10+" : count;
+                    badge.style.display = "flex"; // Show the badge corner circle
+                } else {
+                    badge.style.display = "none";  // Hide if 0
+                }
+            })
+            .catch(error => console.error("Notification look-up failed:", error));
+    }
 }
 
-setInterval(pingServer, 5000);
+// Run immediately on page load, then poll every 5 seconds
 pingServer();
+setInterval(pingServer, 5000);
 </script>
 {% endif %}
 

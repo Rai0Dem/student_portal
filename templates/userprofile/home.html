@@ -1,93 +1,152 @@
 {% extends "base.html" %}
 {% load static %}
 
-    {% block title %}Home{% endblock %}
+{% block title %}Home{% endblock %}
 
-    {% block content %}
+{% block content %}
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            text-align: center;
-        }
-        header {
-            display: flex;
-            justify-content: space-between;
-            padding: 20px;
-        }
-        header button {
-            padding: 10px 20px;
-            cursor: pointer;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        .profile-pic {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #ccc;
-            margin-top: 20px;
-        }
-        .main-buttons button {
-            padding: 12px 30px;
-            cursor: pointer;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            margin: 10px;
-            font-size: 16px;
-        }
-        h1 {
-            margin-top: 15px;
-            font-size: 28px;
-        }
-    </style>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+    }
+    header {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px;
+    }
+    header button {
+        padding: 10px 20px;
+        cursor: pointer;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+    }
+    .profile-pic {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #ccc;
+        margin-top: 20px;
+    }
+    .main-buttons {
+        max-width: 700px;
+        margin: 0 auto;
+        padding-top: 10px;
+    }
+    .main-buttons button {
+        padding: 12px 30px;
+        cursor: pointer;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        margin: 10px;
+        font-size: 16px;
+        width: 200px; /* Fixed width for alignment */
+        transition: transform 0.2s, background 0.2s;
+    }
+    .main-buttons button:hover {
+        background: #218838;
+        transform: translateY(-2px);
+    }
+    /* Secondary color for the new academic tools */
+    .btn-academic {
+        background: #17a2b8 !important;
+    }
+    .btn-academic:hover {
+        background: #138496 !important;
+    }
+    h1 {
+        margin-top: 15px;
+        font-size: 28px;
+    }
+    .role-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        background: #e9f2ff;
+        color: #2c5aa0;
+        border-radius: 15px;
+        font-weight: 600;
+        margin-top: -5px;
+    }
 
-    <!-- Top header -->
-    <header>
-        <a href="{% url 'admin:index' %}"><button>Help</button></a>
-        <a href="{% url 'logout' %}"><button>Logout</button></a>
-    </header>
+    /* Target wrapper container to position the badge on the button corner */
+    .badge-wrapper {
+        position: relative;
+        display: inline-block;
+    }
 
-    <!-- Profile picture -->
-     {% if user.profile.avatar %}
-        <img src="{{ user.profile.avatar.url }}" class="profile-pic">
-     {% else %}
-        <img src="{% static 'default.jpg' %}" class="profile-pic">
-     {% endif %}
+    /* Small circle badge appearing over the button corner */
+    .button-corner-badge {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        background-color: #dc3545; /* Crimson Red */
+        color: white;
+        font-size: 11px;
+        font-weight: bold;
+        border-radius: 50%;
+        min-width: 20px;
+        height: 20px;
+        padding: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        border: 2px solid white; /* Pops it clean off the green button background */
+        transform: translate(35%, -35%); /* Perfect anchor offset over the corner */
+        pointer-events: none; /* Clicking badge still triggers button link */
+    }
+</style>
 
-    <!-- Greeting -->
-    <h1>Hello, {{ user.first_name|default:user.username }}!</h1>
-    <p style="
-       display:inline-block;
-       padding:6px 14px;
-       background:#e9f2ff;
-       color:#2c5aa0;
-       border-radius:15px;
-       font-weight:600;
-       margin-top:-5px;
-       ">
-      {{ user.profile.role|title }}
-     </p>
-    <!-- Main section buttons -->
-    <div class="main-buttons">
-           <a href="{% url 'edit_profile' %}">
+<header>
+    <a href="{% url 'help_page' %}"><button>Help</button></a>
+    <a href="{% url 'logout' %}"><button>Logout</button></a>
+</header>
+
+{% if user.profile.avatar %}
+    <img src="{{ user.profile.avatar.url }}" class="profile-pic">
+{% else %}
+    <img src="{% static 'default.jpg' %}" class="profile-pic">
+{% endif %}
+
+<h1>Hello, {{ user.first_name|default:user.username }}!</h1>
+<p class="role-badge">
+    {{ user.profile.role|title }}
+</p>
+
+<div class="main-buttons">
+    <div class="button-row">
+        <a href="{% url 'edit_profile' %}">
             <button>Customize Profile</button>
         </a>
-
         <a href="{% url 'friends_list' %}">
             <button>Friends</button>
         </a>
+        
+        <!-- The Badged Notification Button Group -->
+        <div class="badge-wrapper">
+            <a href="{% url 'notification_list' %}">
+                <button>Notifications</button>
+            </a>
+            <!-- The dynamic circle element sitting directly on the corner -->
+            <span id="notification-badge" class="button-corner-badge" style="display: none;">0</span>
+        </div>
+    </div>
 
+    <div class="button-row">
+        <a href="{% url 'file_list' %}">
+            <button class="btn-academic">Files Archive</button>
+        </a>
         <a href="#">
-            <button>Notifications</button>
+            <button class="btn-academic">Virtual Classroom</button>
         </a>
     </div>
-    {% endblock %}
+</div>
+{% endblock %}

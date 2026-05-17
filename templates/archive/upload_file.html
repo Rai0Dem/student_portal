@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 50px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center;">
+    <h2 style="color: #333;">Upload New Resource</h2>
+    
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        {% if form.file.errors %}
+            <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 14px;">
+                {{ form.file.errors.0 }}
+            </div>
+        {% endif %}
+
+        <div style="margin-bottom: 20px; text-align: left;">
+            <label style="display: block; font-weight: bold; margin-bottom: 5px; color: #555;">File Title</label>
+            <input type="text" name="title" required placeholder="e.g. Week 4 Lecture Notes" 
+                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+        </div>
+
+        <div style="margin-bottom: 25px; text-align: left;">
+            <label style="display: block; font-weight: bold; margin-bottom: 5px; color: #555;">Select File</label>
+            <input type="file" name="file" accept=".pdf,.txt" required style="width: 100%;">
+            <p style="font-size: 11px; color: #888; margin-top: 8px;">Allowed formats: <strong>.pdf, .txt</strong> (Single file only)</p>
+        </div>
+
+        <button type="submit" style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px;">
+            Publish to Archive
+        </button>
+    </form>
+    
+    <a href="{% url 'file_list' %}" style="display: block; margin-top: 20px; color: #dc3545; text-decoration: none; font-size: 14px; font-weight: 600;">Cancel</a>
+</div>
+{% endblock %}

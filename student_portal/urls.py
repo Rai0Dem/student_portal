@@ -28,6 +28,8 @@ urlpatterns = [
     path('userprofile/', include('userprofile.urls')),
     path('', include('userprofile.urls')),
     path('chat/', include('chat.urls')),
+    path('archive/', include('archive.urls')),
+    path('notifications/', include('notifications.urls')),
  ]
 
 if settings.DEBUG:

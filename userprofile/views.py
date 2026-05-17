@@ -32,3 +32,7 @@ def edit_profile(request):
     }
 
     return render(request, 'userprofile/edit_profile.html', context)
+
+@login_required
+def help_page(request):
+    return render(request, 'userprofile/help.html')
